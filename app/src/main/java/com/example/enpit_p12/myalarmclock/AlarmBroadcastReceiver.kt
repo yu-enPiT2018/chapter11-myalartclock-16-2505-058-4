@@ -12,7 +12,7 @@ class AlarmBroadcastReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
        context?.run {
            startActivity(
-                   intentFor<MainActivity>("onReceive" to true).newTask())
+                    intentFor<MainActivity>("onReceive" to true).newTask())
            )
        }
     }

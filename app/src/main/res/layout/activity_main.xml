@@ -20,7 +20,7 @@
         app:srcCompat="@drawable/background" />
 
     <Button
-        android:id="@+id/cancelAlarm"
+         android:id="@+id/cancelAlarm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"

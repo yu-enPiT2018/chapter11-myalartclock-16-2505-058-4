@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity()
         }
         timText.setOnClickListener {
             val dialog = TimePickerFragment()
-            dialog.show(supportFragmentManager, "time_dialog")
+             dialog.show(supportFragmentManager, "time_dialog")
         }
     }
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
