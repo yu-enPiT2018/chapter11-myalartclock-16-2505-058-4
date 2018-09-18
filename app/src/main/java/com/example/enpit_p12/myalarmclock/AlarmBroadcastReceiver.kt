@@ -6,16 +6,15 @@ import android.content.Intent
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.newTask
 import org.jetbrains.anko.toast
-import kotlin.coroutines.experimental.coroutineContext
 
 class AlarmBroadcastReceiver: BroadcastReceiver() {
+
     override fun onReceive(context: Context?, intent: Intent?) {
-       context?.run {
-           startActivity(
-                    intentFor<MainActivity>("onReceive" to true).newTask())
-           )
-       }
+        context?.run{
+            startActivity(
+                    intentFor<MainActivity>("onReceive" to true).newTask()
+            )
+        }
+
     }
-
-
 }

@@ -2,114 +2,143 @@ package com.example.enpit_p12.myalarmclock
 
 import android.annotation.TargetApi
 import android.app.AlarmManager
+import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.app.AlarmManagerCompat
+import com.example.enpit_p12.myalarmclock.R.id.cancelAlarm
+import com.example.enpit_p12.myalarmclock.R.id.setAlarm
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.DateFormat
+import java.util.*
+import android.text.format.DateFormat
+import android.view.WindowManager.LayoutParams.*
+import org.jetbrains.anko.toast
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import javax.xml.transform.Templates
 
-class MainActivity : AppCompatActivity()
-    , SimpleAlertDialog.OnClickListener
-    ,DatePickerFragment.OnDateSelectedListener
-    ,TimePickerFragment.OnTimeSelectedListemer{
-    override fun onSelected(year: Int, month: Int, date: Int) {
-        val c = Calendar.getInstance()
-        c.set(year, month, date)
-        dateText.text = DateFormat.format("YYYY/MM/dd", c)
+
+class MainActivity : AppCompatActivity() ,SimpleAlertDialog.OnClickListener
+        ,DatePickerFragment.OnDateSelectedListener
+        ,TimePickerFragment.OnTimeSelectedListener{
+    override fun onSelected(year:Int, month: Int,date:Int) {
+        val c= Calendar.getInstance()
+        c.set(year,month,date)
+        dateText.text = DateFormat.format("yyyy/MM/dd",c)
+
     }
 
-    override fun onSelected(hourOfDay: Int, minute: Int) {
-        timeText.text = "%1$02d:%2$02d".format(hourOfDay,minute)
+    override fun onSelected(hourOfDays: Int,minute: Int){
+        timeText.text ="%1$02d:%2$02d".format(hourOfDays,minute)
     }
-    }
-
     override fun onPositiveClick() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         finish()
     }
 
     override fun onNegativeClick() {
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = System.currentTimeMillis()
-        calendar.add(Calendar.MINUTE, 5)
+
+        calendar.timeInMillis=System.currentTimeMillis()
+        calendar.add(Calendar.MINUTE,5)
         setAlarmManager(calendar)
         finish()
     }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (intent?.getBooleanExtra("onReceive", false) == true) {
+        if(intent?.getBooleanExtra("onReceive",false)==true){
             when{
-                Build.VERSION.SDK_INT >= Bulid.VERSION_CODES.O ->
-                        window.addFlags(FLAG_TURN_ON or
-                        FLAG_SHOW_WHEN_LOCKED)
+
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
+                    window.addFlags(FLAG_TURN_SCREEN_ON or FLAG_SHOW_WHEN_LOCKED)
                 else ->
-                        window.addFlags(FLAG_TURN_SCREEN_ON or
-                                FLAG_SHOW_WHEN_LOCKED or FLAG_DISMISS_KEYGUARD)
+                    window.addFlags(FLAG_TURN_SCREEN_ON or FLAG_SHOW_WHEN_LOCKED or FLAG_DISMISS_KEYGUARD)
             }
             val dialog = SimpleAlertDialog()
-            dialog.show(supportFragmentManager, "alert_dialog")
+            dialog.show(supportFragmentManager,"alert_dialog")
         }
         setContentView(R.layout.activity_main)
 
-        setAlarm.setOnClickListener {
-            val date = "${dateText.text} ${timeText.text}".toDate()
-            when {
-                date != null -> {
-                    val calendar = Calendar.getInstance()
-                    calendar.time = date
-                    setAlarmManager(calendar)
+        setAlarm.setOnClickListener{
+            val date ="${dateText.text} ${timeText.text}".toDate()
+            when{
+                date != null ->{
+                    val calender = Calendar.getInstance()
+                    calender.time= date
+                    setAlarmManager(calender)
                     toast("アラームをセットしました")
-
                 }
-                else -> {
+                else ->{
                     toast("日付の形式が正しくありません")
                 }
             }
         }
+
         cancelAlarm.setOnClickListener {
-            cancelAarmManager()
+            cancelAlarmManager()
         }
-        dateText.setOnClickListener {
+        dateText.setOnClickListener{
             val dialog = DatePickerFragment()
-            dialog.show(supportFragmentManager, "date_dialog")
+            dialog.show(supportFragmentManager,"date_dialog")
         }
-        timText.setOnClickListener {
-            val dialog = TimePickerFragment()
-             dialog.show(supportFragmentManager, "time_dialog")
+        timeText.setOnClickListener{
+            val dialog =TimePickerFragment()
+
+            dialog.show(supportFragmentManager,"time_dialog")
         }
     }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private  fun  cancelAlarmManager() {
+    private fun setAlarmManager(calendar: Calendar){
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
+        val intent = Intent(this,AlarmBroadcastReceiver::class.java)
         val pending = PendingIntent.getBroadcast(this,0,intent,0)
-        am.cancel(pending)
+        when{
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ->{
+                val info = AlarmManager.AlarmClockInfo(
+                        calendar.timeInMillis, null
+
+                )
+                am.setAlarmClock(info,pending)
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
+                am.setExact(AlarmManager.RTC_WAKEUP,calendar.timeInMillis,pending)
+            }
+            else ->{
+                am.set(AlarmManager.RTC_WAKEUP,calendar.timeInMillis,pending)
+            }
+        }
     }
-    private fun setAlarmManager(calendar: Calendar) {
-        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    private fun cancelAlarmManager() {
+        val am =
+                getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, AlarmBroadcastReceiver::class.java)
         val pending = PendingIntent.getBroadcast(this, 0, intent, 0)
+        am.cancel(pending)
     }
-    fun String.toDate(pattern: String = "yyyy/MM/dd HH:mm"): Date? {
-        val sdFormat = try {
+
+    fun String.toDate(pattern:String = "yyyy/MM/dd HH:mm"): Date?{
+        val sdFormat =try{
             SimpleDateFormat(pattern)
-        } catch (e: IllegalArgumentException) {
+
+        }catch (e:IllegalArgumentException){
             null
         }
         val date = sdFormat?.let {
             try {
                 it.parse(this)
-            } catch (e: ParseException) {
+            }catch (e:ParseException){
                 null
             }
         }
         return date
     }
 
+}
